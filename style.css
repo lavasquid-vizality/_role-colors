@@ -1,0 +1,13 @@
+.RC-RoleIcon {
+    height: 21px;
+    margin-left: 1px;
+}
+.RC-Avatar {
+    width: 14px!important;
+    height: 14px!important;
+    margin-left: 1px;
+    margin-right: 2px;
+}
+.coloredRepliedMessage::before {
+    border-color: inherit;
+}

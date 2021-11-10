@@ -1,0 +1,7 @@
+{
+  "name": "Role Colors",
+  "description": "Colors Discord according to user's role",
+  "version": "1.0.0",
+  "author": "LavaSquid",
+  "license": "MIT"
+}
