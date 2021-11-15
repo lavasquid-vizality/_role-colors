@@ -326,7 +326,7 @@ export default class extends Plugin {
     // Name Tag
     patch(getModule(m => m.default?.displayName === 'NameTag'), 'default', (args, res) => {
       const { userId, guildId, className } = args[0];
-      if ((className.includes(headerTag) && !this.settings.get('UPUsername', defaultSettings.UPUsername)) || (className.includes(nameTagUM) && !this.settings.get('UMUsername', defaultSettings.UMUsername))) return res;
+      if ((className?.includes(headerTag) && !this.settings.get('UPUsername', defaultSettings.UPUsername)) || (className?.includes(nameTagUM) && !this.settings.get('UMUsername', defaultSettings.UMUsername))) return res;
 
       const color = getColor(guildId, userId);
       if (!color) return res;
