@@ -102,7 +102,10 @@ export default class extends Plugin {
 
       const { channelId, userId } = args[0];
 
-      TempPatch(res.props, 'children', null, () => ({ channelId, userId }));
+      TempPatch(res.props, 'children', (_Children, Args) => {
+        Args.channelId = channelId;
+        Args.userId = userId;
+      }, true);
 
       return res;
     });
@@ -229,19 +232,20 @@ export default class extends Plugin {
 
     // User Info Area
     patch(getModule(m => String(m.default).includes('e.within')), 'default', (args, res) => {
-      if (res.props.className !== `${nameTag} ${canCopy}` || (!this.settings.get('UITitle', defaultSettings.UITitle) && !this.settings.get('UIStatus', defaultSettings.UIStatus))) return;
+      if (args[0].children.props.className !== `${nameTag} ${canCopy}` || (!this.settings.get('UITitle', defaultSettings.UITitle) && !this.settings.get('UIStatus', defaultSettings.UIStatus))) return;
 
       const color = getColor(getGuildId(), user.getCurrentUser().id);
-      if (!color) return res;
+      if (!color) return;
 
       if (this.settings.get('UITitle', defaultSettings.UITitle)) {
-        TempPatch(findInReactTree(res, m => m.type?.displayName === 'PanelTitle'), 'type', Type => {
+        TempPatch(findInReactTree(args, m => m.type?.displayName === 'PanelTitle'), 'type', Type => {
           Style(Type, color);
+          return Type;
         });
       }
 
-      if (this.settings.get('UIStatus', defaultSettings.UIStatus)) Style(findInReactTree(res, m => m.type?.displayName === 'HoverRoll'), color);
-    });
+      if (this.settings.get('UIStatus', defaultSettings.UIStatus)) Style(findInReactTree(args, m => m.type?.displayName === 'HoverRoll'), color);
+    }, 'before');
 
     // User Popout
     patch(getModule(m => m.type?.displayName === 'UserPopoutContainer'), 'type', (args, res) => {
@@ -262,7 +266,13 @@ export default class extends Plugin {
               Style(nickname, color);
             }
 
-            if (this.settings.get('UPUsername', defaultSettings.UPUsername)) TempPatch(findInReactTree(Type, m => m.type?.displayName === 'DiscordTag'), 'type', null, () => ({ guildId, userId }));
+            if (this.settings.get('UPUsername', defaultSettings.UPUsername)) {
+              TempPatch(findInReactTree(Type, m => m.type?.displayName === 'DiscordTag'), 'type', (_Type, Args) => {
+                Args.guildId = guildId;
+                Args.userId = userId;
+              }, true);
+            }
+            return Type;
           });
         }
 
@@ -270,7 +280,9 @@ export default class extends Plugin {
           TempPatch(findInTree(Type, m => m.type?.displayName === 'UserPopoutCustomStatus', { walkable: [ 'props', 'children', 'customStatus' ] }), 'type', Type => {
             TempPatch(Type, 'type', Type => {
               Style(Type, color);
+              return Type;
             });
+            return Type;
           });
         }
 
@@ -278,9 +290,12 @@ export default class extends Plugin {
           TempPatch(children[3].props.children[0], 'type', Type => {
             TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserBio'), 'type', Type => {
               Style(Type, color);
+              return Type;
             });
+            return Type;
           });
         }
+        return Type;
       });
 
       return res;
@@ -295,13 +310,20 @@ export default class extends Plugin {
       if (!color) return res;
 
       TempPatch(findInReactTree(res, m => m.type?.displayName === 'UserProfileModalHeader'), 'type', Type => {
-        if (this.settings.get('UMUsername', defaultSettings.UMUsername)) TempPatch(findInReactTree(Type, m => m.type?.displayName === 'DiscordTag'), 'type', null, () => ({ guildId, userId }));
+        if (this.settings.get('UMUsername', defaultSettings.UMUsername)) {
+          TempPatch(findInReactTree(Type, m => m.type?.displayName === 'DiscordTag'), 'type', (_Type, Args) => {
+            Args.guildId = guildId;
+            Args.userId = userId;
+          }, true);
+        }
 
         if (this.settings.get('UMStatus', defaultSettings.UMStatus)) {
           TempPatch(findInReactTree(Type, m => m.type?.displayName === 'CustomStatusActivity'), 'type', Type => {
             TempPatch(findInReactTree(Type, m => m.type?.displayName === 'CustomStatus'), 'type', Type => {
               Style(Type, color);
+              return Type;
             });
+            return Type;
           });
         }
 
@@ -310,10 +332,14 @@ export default class extends Plugin {
             TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserInfoBase'), 'type', Type => {
               TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserBio'), 'type', Type => {
                 Style(Type, color);
+                return Type;
               });
+              return Type;
             });
+            return Type;
           });
         }
+        return Type;
       });
 
       return res;
@@ -361,16 +387,18 @@ export default class extends Plugin {
 
         const { guildId } = _this.props;
 
-        TempPatch(res.props, 'renderRow', renderRow => {
-          TempPatch(renderRow, 'type', Type => {
+        TempPatch(res.props, 'renderRow', RenderRow => {
+          TempPatch(RenderRow, 'type', Type => {
             const { id: userId } = findInReactTree(Type, m => m.type?.displayName === 'DiscordTag').props.user;
 
             const color = getColor(guildId, userId);
-            if (!color) return;
+            if (!color) return Type;
 
             const nickname = findInReactTree(Type, m => m.type === 'span');
             Style(nickname, color);
+            return Type;
           });
+          return RenderRow;
         });
 
         return res;

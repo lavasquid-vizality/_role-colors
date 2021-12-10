@@ -1,17 +1,11 @@
-export default (oldFunction, name, newFunction, newArgsFunction) => {
+export default (oldFunction, name, newFunction, before = false) => {
   const _Name = oldFunction?.[name];
   if (!_Name || typeof _Name !== 'function') return;
+
   oldFunction[name] = (...args) => {
-    if (newArgsFunction) {
-      const newArgs = newArgsFunction(...args);
-      args[0] = {
-        ...args[0],
-        ...newArgs
-      };
-    }
-    const Name = _Name(...args);
-    if (newFunction) newFunction(Name);
-    return Name;
+    return newFunction
+      ? newFunction(before ? _Name : _Name(...args), ...args) ?? _Name(...args)
+      : _Name(...args);
   };
-  oldFunction[name].displayName = _Name.displayName;
+  oldFunction[name].displayName = _Name.displayName ?? null;
 };
