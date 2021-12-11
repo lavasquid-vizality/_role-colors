@@ -149,7 +149,7 @@ export default class extends Plugin {
 
     // Typing Users
     patch(getModule(m => m.displayName === 'FluxContainer(TypingUsers)').prototype.render.call({ memoizedGetStateFromStores: () => void 0 }).type.prototype, 'render', (args, res, _this) => {
-      if (!this.settings.get('Typing', defaultSettings.Typing)) return res;
+      if (!res || !this.settings.get('Typing', defaultSettings.Typing)) return res;
 
       const { typingUsers, guildId } = _this.props;
       if (isEmptyObject(typingUsers)) return res;
