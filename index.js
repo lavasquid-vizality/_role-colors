@@ -13,7 +13,7 @@ import getColor from './api/getColor';
 import Style from './modules/Style';
 import TempPatch from './modules/TempPatch';
 
-import { defaultSettings } from './constants';
+import { DefaultSettings } from './constants';
 
 const RoleIcon = getModule(m => m.displayName === 'RoleIcon');
 
@@ -28,7 +28,7 @@ const { body } = getModule('body', 'tabBar');
 const { headerTag } = getModule('headerTag');
 const { nameTag: nameTagUM } = getModule('nameTag', 'header');
 
-export default class extends Plugin {
+export default class RoleColors extends Plugin {
   start () {
     this.injectStyles('./style.css');
     this.patch();
@@ -38,7 +38,7 @@ export default class extends Plugin {
     // Chat
     // Replied Message Border
     patch(getModule(m => m.default?.displayName === 'RepliedMessage'), 'default', (args, res) => {
-      if (!this.settings.get('RepliedMessageBorder', defaultSettings.RepliedMessageBorder)) return res;
+      if (!this.settings.get('RepliedMessageBorder', DefaultSettings.RepliedMessageBorder)) return res;
 
       const color = args[0].repliedAuthor?.colorString;
       if (!color) return res;
@@ -50,7 +50,7 @@ export default class extends Plugin {
     });
     // Bot Tag
     patch(getModule(m => String(m.default).includes('e.userOverride')), 'default', (args, res) => {
-      if (!this.settings.get('BotTag', defaultSettings.BotTag)) return res;
+      if (!this.settings.get('BotTag', DefaultSettings.BotTag)) return res;
 
       const color = args[0].author.colorString;
       if (!color) return res;
@@ -62,7 +62,7 @@ export default class extends Plugin {
     });
     // Timestamp
     patch(getModule(m => String(m.default).includes('e.childrenRepliedMessage')), 'default', (args, res) => {
-      if (!this.settings.get('Timestamp', defaultSettings.Timestamp)) return;
+      if (!this.settings.get('Timestamp', DefaultSettings.Timestamp)) return;
 
       const color = args[0].childrenHeader?.props.author?.colorString;
       if (!color) return;
@@ -73,7 +73,7 @@ export default class extends Plugin {
       };
     }, 'before');
     patch(getModule(m => m.default?.displayName === 'MessageTimestamp'), 'default', (args, res) => {
-      if (!this.settings.get('Timestamp', defaultSettings.Timestamp)) return res;
+      if (!this.settings.get('Timestamp', DefaultSettings.Timestamp)) return res;
 
       Style(res, 'var(--color)');
 
@@ -81,7 +81,7 @@ export default class extends Plugin {
     });
     // Message
     patch(getModule(m => m.type?.displayName === 'MessageContent'), 'type', (args, res) => {
-      if (!this.settings.get('Message', defaultSettings.Message)) return res;
+      if (!this.settings.get('Message', DefaultSettings.Message)) return res;
 
       const { message } = args[0];
       const channel = getChannel(message.channel_id);
@@ -98,7 +98,7 @@ export default class extends Plugin {
     // Mention
     // User Mention
     patch(getModule(m => m.default?.displayName === 'UserMention'), 'default', (args, res) => {
-      if (!this.settings.get('Mention', defaultSettings.Mention) && !this.settings.get('UserMentionAvatar', defaultSettings.UserMentionAvatar)) return res;
+      if (!this.settings.get('Mention', DefaultSettings.Mention) && !this.settings.get('UserMentionAvatar', DefaultSettings.UserMentionAvatar)) return res;
 
       const { channelId, userId } = args[0];
 
@@ -111,7 +111,7 @@ export default class extends Plugin {
     });
     // Role Mention
     patch(getModule(m => m.default?.displayName === 'RoleMention'), 'default', (args, res) => {
-      if (!this.settings.get('RoleMentionIcon', defaultSettings.RoleMentionIcon)) return;
+      if (!this.settings.get('RoleMentionIcon', DefaultSettings.RoleMentionIcon)) return;
 
       const { guildId, roleId } = args[0];
 
@@ -124,21 +124,21 @@ export default class extends Plugin {
     }, 'before');
     // Mention
     patch(getModule(m => m.default?.displayName === 'Mention'), 'default', (args, res) => {
-      if (!this.settings.get('Mention', defaultSettings.Mention) && !this.settings.get('UserMentionAvatar', defaultSettings.UserMentionAvatar)) return;
+      if (!this.settings.get('Mention', DefaultSettings.Mention) && !this.settings.get('UserMentionAvatar', DefaultSettings.UserMentionAvatar)) return;
 
       const { className, channelId, userId, children } = args[0];
       if (className !== 'mention' || !userId) return;
       const channel = getChannel(channelId);
       const guildId = channel?.guild_id;
 
-      if (this.settings.get('UserMentionAvatar', defaultSettings.UserMentionAvatar)) {
+      if (this.settings.get('UserMentionAvatar', DefaultSettings.UserMentionAvatar)) {
         if (children.type?.displayName !== 'UserMentionAvatar') {
           args[0].children = <DynamicAnimatedAvatar guildId={guildId} userId={userId}>{children}</DynamicAnimatedAvatar>;
           DynamicAnimatedAvatar.displayName = 'UserMentionAvatar';
         }
       }
 
-      if (this.settings.get('Mention', defaultSettings.Mention)) {
+      if (this.settings.get('Mention', DefaultSettings.Mention)) {
         if (!guildId) return;
         const color = getColor(guildId, userId);
         if (!color) return;
@@ -149,7 +149,7 @@ export default class extends Plugin {
 
     // Typing Users
     patch(getModule(m => m.displayName === 'FluxContainer(TypingUsers)').prototype.render.call({ memoizedGetStateFromStores: () => void 0 }).type.prototype, 'render', (args, res, _this) => {
-      if (!res || !this.settings.get('Typing', defaultSettings.Typing)) return res;
+      if (!res || !this.settings.get('Typing', DefaultSettings.Typing)) return res;
 
       const { typingUsers, guildId } = _this.props;
       if (isEmptyObject(typingUsers)) return res;
@@ -169,7 +169,7 @@ export default class extends Plugin {
     // MemberList
     // Sections
     patch(getModule(m => m.default?.displayName === 'ListSectionItem'), 'default', (args, res) => {
-      if (args[0].className !== membersGroup || !this.settings.get('MLSection', defaultSettings.MLSection)) return res;
+      if (args[0].className !== membersGroup || !this.settings.get('MLSection', DefaultSettings.MLSection)) return res;
       const [ name ] = args[0].children?.[1].props?.children ?? [ null ];
       if (!name) return res;
 
@@ -182,7 +182,7 @@ export default class extends Plugin {
     });
     // User Activity
     patch(getModule(m => m.displayName === 'MemberListItem').prototype, 'renderActivity', (args, res, _this) => {
-      if (!this.settings.get('MLUserActivity', defaultSettings.MLUserActivity)) return res;
+      if (!this.settings.get('MLUserActivity', DefaultSettings.MLUserActivity)) return res;
 
       const { guildId, user: { id: userId } } = _this.props;
 
@@ -194,7 +194,7 @@ export default class extends Plugin {
       return res;
     });
     patch(getModule(m => m.default?.displayName === 'ActivityStatus'), 'default', (args, res) => {
-      if (!res || !this.settings.get('MLUserActivity', defaultSettings.MLUserActivity)) return res;
+      if (!res || !this.settings.get('MLUserActivity', DefaultSettings.MLUserActivity)) return res;
 
       const { color } = args[0];
       if (!color) return res;
@@ -205,7 +205,7 @@ export default class extends Plugin {
     });
     // Bot Tag
     patch(getModule(m => m.displayName === 'MemberListItem').prototype, 'renderBot', (args, res, _this) => {
-      if (!res || !this.settings.get('BotTag', defaultSettings.BotTag)) return res;
+      if (!res || !this.settings.get('BotTag', DefaultSettings.BotTag)) return res;
 
       const { guildId, user: { id: userId } } = _this.props;
 
@@ -219,7 +219,7 @@ export default class extends Plugin {
 
     // Voice
     patch(getModule(m => m.displayName === 'VoiceUser').prototype, 'renderName', (args, res, _this) => {
-      if (!res || !this.settings.get('Voice', defaultSettings.Voice)) return res;
+      if (!res || !this.settings.get('Voice', DefaultSettings.Voice)) return res;
       const { guildId, user: { id: userId } } = _this.props;
 
       const color = getColor(guildId, userId);
@@ -232,24 +232,24 @@ export default class extends Plugin {
 
     // User Info Area
     patch(getModule(m => String(m.default).includes('e.within')), 'default', (args, res) => {
-      if (args[0].children.props.className !== `${nameTag} ${canCopy}` || (!this.settings.get('UITitle', defaultSettings.UITitle) && !this.settings.get('UIStatus', defaultSettings.UIStatus))) return;
+      if (args[0].children.props.className !== `${nameTag} ${canCopy}` || (!this.settings.get('UITitle', DefaultSettings.UITitle) && !this.settings.get('UIStatus', DefaultSettings.UIStatus))) return;
 
       const color = getColor(getGuildId(), user.getCurrentUser().id);
       if (!color) return;
 
-      if (this.settings.get('UITitle', defaultSettings.UITitle)) {
+      if (this.settings.get('UITitle', DefaultSettings.UITitle)) {
         TempPatch(findInReactTree(args, m => m.type?.displayName === 'PanelTitle'), 'type', Type => {
           Style(Type, color);
           return Type;
         });
       }
 
-      if (this.settings.get('UIStatus', defaultSettings.UIStatus)) Style(findInReactTree(args, m => m.type?.displayName === 'HoverRoll'), color);
+      if (this.settings.get('UIStatus', DefaultSettings.UIStatus)) Style(findInReactTree(args, m => m.type?.displayName === 'HoverRoll'), color);
     }, 'before');
 
     // User Popout
     patch(getModule(m => m.type?.displayName === 'UserPopoutContainer'), 'type', (args, res) => {
-      if (!res || (!this.settings.get('UPNickname', defaultSettings.UPNickname) && !this.settings.get('UPUsername', defaultSettings.UPUsername) && !this.settings.get('UPStatus', defaultSettings.UPStatus) && !this.settings.get('UPBio', defaultSettings.UPBio))) return res;
+      if (!res || (!this.settings.get('UPNickname', DefaultSettings.UPNickname) && !this.settings.get('UPUsername', DefaultSettings.UPUsername) && !this.settings.get('UPStatus', DefaultSettings.UPStatus) && !this.settings.get('UPBio', DefaultSettings.UPBio))) return res;
 
       const { guildId, userId } = args[0];
 
@@ -259,14 +259,14 @@ export default class extends Plugin {
       TempPatch(res, 'type', Type => {
         const { children } = Type.props.children.props;
 
-        if (this.settings.get('UPNickname', defaultSettings.UPNickname) || this.settings.get('UPUsername', defaultSettings.UPUsername)) {
+        if (this.settings.get('UPNickname', DefaultSettings.UPNickname) || this.settings.get('UPUsername', DefaultSettings.UPUsername)) {
           TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserPopoutInfo'), 'type', Type => {
-            if (this.settings.get('UPNickname', defaultSettings.UPNickname)) {
+            if (this.settings.get('UPNickname', DefaultSettings.UPNickname)) {
               const nickname = findInReactTree(Type, m => m.type?.displayName === 'Header');
               Style(nickname, color);
             }
 
-            if (this.settings.get('UPUsername', defaultSettings.UPUsername)) {
+            if (this.settings.get('UPUsername', DefaultSettings.UPUsername)) {
               TempPatch(findInReactTree(Type, m => m.type?.displayName === 'DiscordTag'), 'type', (_Type, Args) => {
                 Args.guildId = guildId;
                 Args.userId = userId;
@@ -276,7 +276,7 @@ export default class extends Plugin {
           });
         }
 
-        if (this.settings.get('UMStatus', defaultSettings.UMStatus)) {
+        if (this.settings.get('UMStatus', DefaultSettings.UMStatus)) {
           TempPatch(findInTree(Type, m => m.type?.displayName === 'UserPopoutCustomStatus', { walkable: [ 'props', 'children', 'customStatus' ] }), 'type', Type => {
             TempPatch(Type, 'type', Type => {
               Style(Type, color);
@@ -286,7 +286,7 @@ export default class extends Plugin {
           });
         }
 
-        if (this.settings.get('UMBio', defaultSettings.UMBio)) {
+        if (this.settings.get('UMBio', DefaultSettings.UMBio)) {
           TempPatch(children[3].props.children[0], 'type', Type => {
             TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserBio'), 'type', Type => {
               Style(Type, color);
@@ -302,7 +302,7 @@ export default class extends Plugin {
     });
     // User Modal
     patch(getModule(m => m.default?.displayName === 'UserProfileModal'), 'default', (args, res) => {
-      if (!this.settings.get('UMUsername', defaultSettings.UMUsername) && !this.settings.get('UMStatus', defaultSettings.UMStatus) && !this.settings.get('UMBio', defaultSettings.UMBio)) return res;
+      if (!this.settings.get('UMUsername', DefaultSettings.UMUsername) && !this.settings.get('UMStatus', DefaultSettings.UMStatus) && !this.settings.get('UMBio', DefaultSettings.UMBio)) return res;
 
       const { guildId, user: { id: userId } } = args[0];
 
@@ -310,14 +310,14 @@ export default class extends Plugin {
       if (!color) return res;
 
       TempPatch(findInReactTree(res, m => m.type?.displayName === 'UserProfileModalHeader'), 'type', Type => {
-        if (this.settings.get('UMUsername', defaultSettings.UMUsername)) {
+        if (this.settings.get('UMUsername', DefaultSettings.UMUsername)) {
           TempPatch(findInReactTree(Type, m => m.type?.displayName === 'DiscordTag'), 'type', (_Type, Args) => {
             Args.guildId = guildId;
             Args.userId = userId;
           }, true);
         }
 
-        if (this.settings.get('UMStatus', defaultSettings.UMStatus)) {
+        if (this.settings.get('UMStatus', DefaultSettings.UMStatus)) {
           TempPatch(findInReactTree(Type, m => m.type?.displayName === 'CustomStatusActivity'), 'type', Type => {
             TempPatch(findInReactTree(Type, m => m.type?.displayName === 'CustomStatus'), 'type', Type => {
               Style(Type, color);
@@ -327,7 +327,7 @@ export default class extends Plugin {
           });
         }
 
-        if (this.settings.get('UMBio', defaultSettings.UMBio)) {
+        if (this.settings.get('UMBio', DefaultSettings.UMBio)) {
           TempPatch(findInReactTree(res, m => m.className === body)?.children, 'type', Type => {
             TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserInfoBase'), 'type', Type => {
               TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserBio'), 'type', Type => {
@@ -352,12 +352,12 @@ export default class extends Plugin {
     // Name Tag
     patch(getModule(m => m.default?.displayName === 'NameTag'), 'default', (args, res) => {
       const { userId, guildId, className } = args[0];
-      if ((className?.includes(headerTag) && !this.settings.get('UPUsername', defaultSettings.UPUsername)) || (className?.includes(nameTagUM) && !this.settings.get('UMUsername', defaultSettings.UMUsername))) return res;
+      if ((className?.includes(headerTag) && !this.settings.get('UPUsername', DefaultSettings.UPUsername)) || (className?.includes(nameTagUM) && !this.settings.get('UMUsername', DefaultSettings.UMUsername))) return res;
 
       const color = getColor(guildId, userId);
       if (!color) return res;
 
-      if (this.settings.get('BotTag', defaultSettings.BotTag)) {
+      if (this.settings.get('BotTag', DefaultSettings.BotTag)) {
         const BotTag = findInReactTree(res, m => m.type?.displayName === 'BotTag');
         if (BotTag) BotTag.props.color = color;
       }
@@ -370,7 +370,7 @@ export default class extends Plugin {
 
     // Bot Tag
     patch(getModule(m => m.default?.displayName === 'BotTag'), 'default', (args, res) => {
-      if (!this.settings.get('BotTag', defaultSettings.BotTag)) return res;
+      if (!this.settings.get('BotTag', DefaultSettings.BotTag)) return res;
 
       const { color } = args[0];
       if (!color) return res;
@@ -383,7 +383,7 @@ export default class extends Plugin {
     // Reactions
     new Promise(async (resolve, reject) => resolve((await react.getComponent('ReactorsComponent')).component.prototype)).then(Reactions => {
       patch(Reactions, 'render', (args, res, _this) => {
-        if (!this.settings.get('ReactionsModal', defaultSettings.ReactionsModal)) return res;
+        if (!this.settings.get('ReactionsModal', DefaultSettings.ReactionsModal)) return res;
 
         const { guildId } = _this.props;
 
@@ -408,7 +408,7 @@ export default class extends Plugin {
     // Audit Log
     new Promise(async (resolve, reject) => resolve((await react.getComponent('UserHook')).component.prototype)).then(AuditLog => {
       patch(AuditLog, 'render', (args, res, _this) => {
-        if (!this.settings.get('AuditLog', defaultSettings.AuditLog)) return res;
+        if (!this.settings.get('AuditLog', DefaultSettings.AuditLog)) return res;
 
         const { guildId } = findInTree(_this._reactInternals, m => m.guildId, { walkable: [ 'return', 'stateNode', 'props' ] });
         const userId = _this.props.user.id;

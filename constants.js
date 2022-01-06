@@ -1,4 +1,4 @@
-export const defaultSettings = Object.freeze({
+export const DefaultSettings = Object.freeze({
   // Chat
   RepliedMessageBorder: true,
   Timestamp: true,
