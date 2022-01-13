@@ -12,6 +12,7 @@ import DynamicAnimatedAvatar from './components/DynamicAnimatedAvatar';
 import getColor from './api/getColor';
 import Style from './modules/Style';
 import TempPatch from './modules/TempPatch';
+import patchModalLazy from './modules/patchModalLazy';
 
 import { DefaultSettings } from './constants';
 
@@ -24,9 +25,7 @@ const { getGuildId } = getModule(m => m.getGuildId && m.getLastSelectedGuildId);
 
 const { roleIcon, membersGroup } = getModule('membersGroup');
 const { nameTag, canCopy } = getModule('nameTag', 'canCopy');
-const { body } = getModule('body', 'tabBar');
 const { headerTag } = getModule('headerTag');
-const { nameTag: nameTagUM } = getModule('nameTag', 'header');
 
 export default class RoleColors extends Plugin {
   start () {
@@ -61,7 +60,7 @@ export default class RoleColors extends Plugin {
       return res;
     });
     // Timestamp
-    patch(getModule(m => String(m.default).includes('e.childrenRepliedMessage')), 'default', (args, res) => {
+    patch(getModule(m => String(m.default).includes('e.childrenRepliedMessage')), 'default', args => {
       if (!this.settings.get('Timestamp', DefaultSettings.Timestamp)) return;
 
       const color = args[0].childrenHeader?.props.author?.colorString;
@@ -110,7 +109,7 @@ export default class RoleColors extends Plugin {
       return res;
     });
     // Role Mention
-    patch(getModule(m => m.default?.displayName === 'RoleMention'), 'default', (args, res) => {
+    patch(getModule(m => m.default?.displayName === 'RoleMention'), 'default', args => {
       if (!this.settings.get('RoleMentionIcon', DefaultSettings.RoleMentionIcon)) return;
 
       const { guildId, roleId } = args[0];
@@ -123,7 +122,7 @@ export default class RoleColors extends Plugin {
       }
     }, 'before');
     // Mention
-    patch(getModule(m => m.default?.displayName === 'Mention'), 'default', (args, res) => {
+    patch(getModule(m => m.default?.displayName === 'Mention'), 'default', args => {
       if (!this.settings.get('Mention', DefaultSettings.Mention) && !this.settings.get('UserMentionAvatar', DefaultSettings.UserMentionAvatar)) return;
 
       const { className, channelId, userId, children } = args[0];
@@ -231,7 +230,7 @@ export default class RoleColors extends Plugin {
     });
 
     // User Info Area
-    patch(getModule(m => String(m.default).includes('e.within')), 'default', (args, res) => {
+    patch(getModule(m => String(m.default).includes('e.within')), 'default', args => {
       if (args[0].children.props.className !== `${nameTag} ${canCopy}` || (!this.settings.get('UITitle', DefaultSettings.UITitle) && !this.settings.get('UIStatus', DefaultSettings.UIStatus))) return;
 
       const color = getColor(getGuildId(), user.getCurrentUser().id);
@@ -301,7 +300,7 @@ export default class RoleColors extends Plugin {
       return res;
     });
     // User Modal
-    patch(getModule(m => m.default?.displayName === 'UserProfileModal'), 'default', (args, res) => {
+    patchModalLazy(getModule.bind(this, m => m.default?.displayName === 'UserProfileModal'), 'default', (args, res) => {
       if (!this.settings.get('UMUsername', DefaultSettings.UMUsername) && !this.settings.get('UMStatus', DefaultSettings.UMStatus) && !this.settings.get('UMBio', DefaultSettings.UMBio)) return res;
 
       const { guildId, user: { id: userId } } = args[0];
@@ -328,6 +327,8 @@ export default class RoleColors extends Plugin {
         }
 
         if (this.settings.get('UMBio', DefaultSettings.UMBio)) {
+          const { body } = getModule('body', 'tabBar');
+
           TempPatch(findInReactTree(res, m => m.className === body)?.children, 'type', Type => {
             TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserInfoBase'), 'type', Type => {
               TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserBio'), 'type', Type => {
@@ -345,12 +346,14 @@ export default class RoleColors extends Plugin {
       return res;
     });
     // Discord Tag
-    patch(getModule(m => m.default?.displayName === 'DiscordTag'), 'default', (args, res) => {
+    patch(getModule(m => m.default?.displayName === 'DiscordTag'), 'default', args => {
       args[0].guildId = args[0].guildId ?? getGuildId();
       args[0].userId = args[0].userId ?? args[0].user.id;
     }, 'before');
     // Name Tag
     patch(getModule(m => m.default?.displayName === 'NameTag'), 'default', (args, res) => {
+      const { nameTag: nameTagUM } = getModule('nameTag', 'header') ?? {};
+
       const { userId, guildId, className } = args[0];
       if ((className?.includes(headerTag) && !this.settings.get('UPUsername', DefaultSettings.UPUsername)) || (className?.includes(nameTagUM) && !this.settings.get('UMUsername', DefaultSettings.UMUsername))) return res;
 
@@ -381,7 +384,7 @@ export default class RoleColors extends Plugin {
     });
 
     // Reactions
-    new Promise(async (resolve, reject) => resolve((await react.getComponent('ReactorsComponent')).component.prototype)).then(Reactions => {
+    new Promise(async resolve => resolve((await react.getComponent('ReactorsComponent')).component.prototype)).then(Reactions => {
       patch(Reactions, 'render', (args, res, _this) => {
         if (!this.settings.get('ReactionsModal', DefaultSettings.ReactionsModal)) return res;
 
@@ -406,7 +409,7 @@ export default class RoleColors extends Plugin {
     });
 
     // Audit Log
-    new Promise(async (resolve, reject) => resolve((await react.getComponent('UserHook')).component.prototype)).then(AuditLog => {
+    new Promise(async resolve => resolve((await react.getComponent('UserHook')).component.prototype)).then(AuditLog => {
       patch(AuditLog, 'render', (args, res, _this) => {
         if (!this.settings.get('AuditLog', DefaultSettings.AuditLog)) return res;
 
