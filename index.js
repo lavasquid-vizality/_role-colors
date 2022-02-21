@@ -3,7 +3,6 @@ import React from 'react';
 import react from '@vizality/react';
 import { Plugin } from '@vizality/entities';
 import { patch } from '@vizality/patcher';
-import { user } from '@vizality/discord';
 import { getModule } from '@vizality/webpack';
 const { object: { isEmptyObject }, react: { findInReactTree, findInTree } } = require('@vizality/util');
 
@@ -22,10 +21,13 @@ const { getChannel } = getModule(m => m.getChannel && m.hasChannel);
 const { useRoleIcon } = getModule(m => m.useRoleIcon);
 const { getGuild } = getModule(m => m.getGuild);
 const { getGuildId } = getModule(m => m.getGuildId && m.getLastSelectedGuildId);
+const { getCurrentUser } = getModule(m => m.getCurrentUser && m.getUser);
 
 const { roleIcon, membersGroup } = getModule('membersGroup');
 const { nameTag, canCopy } = getModule('nameTag', 'canCopy');
 const { headerTag } = getModule('headerTag');
+let { body } = getModule('body', 'tabBar') ?? {};
+let { nameTag: nameTagUM } = getModule('nameTag', 'header') ?? {};
 
 export default class RoleColors extends Plugin {
   start () {
@@ -48,7 +50,7 @@ export default class RoleColors extends Plugin {
       return res;
     });
     // Bot Tag
-    patch(getModule(m => String(m.default).includes('e.userOverride')), 'default', (args, res) => {
+    patch(getModule(m => m.default?.toString().includes('e.userOverride')), 'default', (args, res) => {
       if (!this.settings.get('BotTag', DefaultSettings.BotTag)) return res;
 
       const color = args[0].author.colorString;
@@ -60,7 +62,7 @@ export default class RoleColors extends Plugin {
       return res;
     });
     // Timestamp
-    patch(getModule(m => String(m.default).includes('e.childrenRepliedMessage')), 'default', args => {
+    patch(getModule(m => m.default?.toString().includes('e.childrenRepliedMessage')), 'default', args => {
       if (!this.settings.get('Timestamp', DefaultSettings.Timestamp)) return;
 
       const color = args[0].childrenHeader?.props.author?.colorString;
@@ -169,7 +171,7 @@ export default class RoleColors extends Plugin {
     // Sections
     patch(getModule(m => m.default?.displayName === 'ListSectionItem'), 'default', (args, res) => {
       if (args[0].className !== membersGroup || !this.settings.get('MLSection', DefaultSettings.MLSection)) return res;
-      const [ name ] = args[0].children?.[1].props?.children ?? [ null ];
+      const name = args[0].children?.[1].props?.children[1];
       if (!name) return res;
 
       const color = Object.values(getGuild(getGuildId()).roles).find(role => role.name === name)?.colorString;
@@ -230,10 +232,10 @@ export default class RoleColors extends Plugin {
     });
 
     // User Info Area
-    patch(getModule(m => String(m.default).includes('e.within')), 'default', args => {
-      if (args[0].children.props.className !== `${nameTag} ${canCopy}` || (!this.settings.get('UITitle', DefaultSettings.UITitle) && !this.settings.get('UIStatus', DefaultSettings.UIStatus))) return;
+    patch(getModule(m => m.default?.toString().includes('e.within')), 'default', args => {
+      if (args[0].children.props.className !== `${nameTag} ${canCopy}` || !this.settings.get('UITitle', DefaultSettings.UITitle) && !this.settings.get('UIStatus', DefaultSettings.UIStatus)) return;
 
-      const color = getColor(getGuildId(), user.getCurrentUser().id);
+      const color = getColor(getGuildId(), getCurrentUser().id);
       if (!color) return;
 
       if (this.settings.get('UITitle', DefaultSettings.UITitle)) {
@@ -248,7 +250,7 @@ export default class RoleColors extends Plugin {
 
     // User Popout
     patch(getModule(m => m.type?.displayName === 'UserPopoutContainer'), 'type', (args, res) => {
-      if (!res || (!this.settings.get('UPNickname', DefaultSettings.UPNickname) && !this.settings.get('UPUsername', DefaultSettings.UPUsername) && !this.settings.get('UPStatus', DefaultSettings.UPStatus) && !this.settings.get('UPBio', DefaultSettings.UPBio))) return res;
+      if (!res || !this.settings.get('UPNickname', DefaultSettings.UPNickname) && !this.settings.get('UPUsername', DefaultSettings.UPUsername) && !this.settings.get('UPStatus', DefaultSettings.UPStatus) && !this.settings.get('UPBio', DefaultSettings.UPBio)) return res;
 
       const { guildId, userId } = args[0];
 
@@ -327,7 +329,7 @@ export default class RoleColors extends Plugin {
         }
 
         if (this.settings.get('UMBio', DefaultSettings.UMBio)) {
-          const { body } = getModule('body', 'tabBar');
+          if (!body) ({ body } = getModule('body', 'tabBar'));
 
           TempPatch(findInReactTree(res, m => m.className === body)?.children, 'type', Type => {
             TempPatch(findInReactTree(Type, m => m.type?.displayName === 'UserInfoBase'), 'type', Type => {
@@ -352,10 +354,10 @@ export default class RoleColors extends Plugin {
     }, 'before');
     // Name Tag
     patch(getModule(m => m.default?.displayName === 'NameTag'), 'default', (args, res) => {
-      const { nameTag: nameTagUM } = getModule('nameTag', 'header') ?? {};
+      if (!nameTagUM) ({ nameTag: nameTagUM } = getModule('nameTag', 'header') ?? {});
 
       const { userId, guildId, className } = args[0];
-      if ((className?.includes(headerTag) && !this.settings.get('UPUsername', DefaultSettings.UPUsername)) || (className?.includes(nameTagUM) && !this.settings.get('UMUsername', DefaultSettings.UMUsername))) return res;
+      if (className?.includes(headerTag) && !this.settings.get('UPUsername', DefaultSettings.UPUsername) || className?.includes(nameTagUM) && !this.settings.get('UMUsername', DefaultSettings.UMUsername)) return res;
 
       const color = getColor(guildId, userId);
       if (!color) return res;
@@ -378,7 +380,7 @@ export default class RoleColors extends Plugin {
       const { color } = args[0];
       if (!color) return res;
 
-      Style(res, 'black', { 'background-color': color });
+      Style(res, null, { 'background-color': color });
 
       return res;
     });

@@ -2,7 +2,7 @@ import { patch } from '@vizality/patcher';
 import { getModule } from '@vizality/webpack';
 
 export default (Module, ...PatchArgs) => {
-  if (Module instanceof Function.bind()) {
+  if (Module instanceof Function.bind.constructor) {
     const openModalLazy = patch(getModule(m => m.openModalLazy), 'openModalLazy', args => {
       const _function = args[0];
       args[0] = async (...args) => {

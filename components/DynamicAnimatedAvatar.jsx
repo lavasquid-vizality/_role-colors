@@ -1,12 +1,13 @@
 import React, { memo, useState } from 'react';
-import { user } from '@vizality/discord';
 import { getModule } from '@vizality/webpack';
 
 const { AnimatedAvatar, Sizes } = getModule(m => m.AnimatedAvatar);
 
+const { getUser } = getModule(m => m.getUser && m.getUsers);
+
 export default memo(({ guildId, userId, children }) => {
   const [ animate, setAnimate ] = useState(false);
-  const User = user.getUser(userId);
+  const User = getUser(userId);
 
   const onMouse = {
     onMouseEnter: () => setAnimate(true),

@@ -1,5 +1,5 @@
 export default (res, color, style) => {
-  if (!res || !color) return;
+  if (!res) return;
 
   res.props.style = {
     ...res.props.style,
