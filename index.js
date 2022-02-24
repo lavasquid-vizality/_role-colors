@@ -4,7 +4,7 @@ import react from '@vizality/react';
 import { Plugin } from '@vizality/entities';
 import { patch } from '@vizality/patcher';
 import { getModule } from '@vizality/webpack';
-const { object: { isEmptyObject }, react: { findInReactTree, findInTree } } = require('@vizality/util');
+const { findInReactTree, findInTree } = require('@vizality/util/react');
 
 import DynamicAnimatedAvatar from './components/DynamicAnimatedAvatar';
 
@@ -153,9 +153,8 @@ export default class RoleColors extends Plugin {
       if (!res || !this.settings.get('Typing', DefaultSettings.Typing)) return res;
 
       const { typingUsers, guildId } = _this.props;
-      if (isEmptyObject(typingUsers)) return res;
 
-      res.props.children[1].props.children.filter?.(child => child.props).forEach((child, index) => {
+      res.props.children?.[1].props.children.filter?.(child => child.props).forEach((child, index) => {
         const userId = Object.keys(typingUsers)[index];
 
         const color = getColor(guildId, userId);
