@@ -24,7 +24,6 @@ const { getGuildId } = getModule(m => m.getGuildId && m.getLastSelectedGuildId);
 const { getCurrentUser } = getModule(m => m.getCurrentUser && m.getUser);
 
 const { roleIcon, membersGroup } = getModule('membersGroup');
-const { nameTag, canCopy } = getModule('nameTag', 'canCopy');
 const { headerTag } = getModule('headerTag');
 let { body } = getModule('body', 'tabBar') ?? {};
 let { nameTag: nameTagUM } = getModule('nameTag', 'header') ?? {};
@@ -231,20 +230,19 @@ export default class RoleColors extends Plugin {
     });
 
     // User Info Area
-    patch(getModule(m => m.default?.toString().includes('e.within')), 'default', args => {
-      if (args[0].children.props.className !== `${nameTag} ${canCopy}` || !this.settings.get('UITitle', DefaultSettings.UITitle) && !this.settings.get('UIStatus', DefaultSettings.UIStatus)) return;
+    patch(getModule(m => m.default?.displayName === 'Text'), 'default', args => {
+      if (args[0].children.type?.displayName !== 'PanelTitle' && args[0].children.type?.displayName !== 'HoverRoll') return;
+      if (!this.settings.get('UITitle', DefaultSettings.UITitle) && !this.settings.get('UIStatus', DefaultSettings.UIStatus)) return;
 
       const color = getColor(getGuildId(), getCurrentUser().id);
       if (!color) return;
 
-      if (this.settings.get('UITitle', DefaultSettings.UITitle)) {
-        TempPatch(findInReactTree(args, m => m.type?.displayName === 'PanelTitle'), 'type', Type => {
+      if (args[0].children.type.displayName === 'PanelTitle' && this.settings.get('UITitle', DefaultSettings.UITitle)) {
+        TempPatch(args[0].children, 'type', Type => {
           Style(Type, color);
           return Type;
         });
-      }
-
-      if (this.settings.get('UIStatus', DefaultSettings.UIStatus)) Style(findInReactTree(args, m => m.type?.displayName === 'HoverRoll'), color);
+      } else if (args[0].children.type.displayName === 'HoverRoll' && this.settings.get('UIStatus', DefaultSettings.UIStatus)) Style(args[0].children, color);
     }, 'before');
 
     // User Popout
@@ -420,7 +418,7 @@ export default class RoleColors extends Plugin {
         const color = getColor(guildId, userId);
         if (!color) return res;
 
-        Style(res, color);
+        res.props.children.forEach(child => Style(child, color));
 
         return res;
       });
