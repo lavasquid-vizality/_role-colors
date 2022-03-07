@@ -231,7 +231,7 @@ export default class RoleColors extends Plugin {
 
     // User Info Area
     patch(getModule(m => m.default?.displayName === 'Text'), 'default', args => {
-      if (args[0].children.type?.displayName !== 'PanelTitle' && args[0].children.type?.displayName !== 'HoverRoll') return;
+      if (args[0].children?.type?.displayName !== 'PanelTitle' && args[0].children?.type?.displayName !== 'HoverRoll') return;
       if (!this.settings.get('UITitle', DefaultSettings.UITitle) && !this.settings.get('UIStatus', DefaultSettings.UIStatus)) return;
 
       const color = getColor(getGuildId(), getCurrentUser().id);
