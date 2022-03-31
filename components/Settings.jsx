@@ -151,14 +151,14 @@ export default memo(({ getSetting, updateSetting, toggleSetting }) => {
         {'Bot Tag'}
       </SwitchItem>
       <SwitchItem
-        value={getSetting('ReactionsModal', DefaultSettings.ReactionsModal)}
-        onChange={() => toggleSetting('ReactionsModal')}
+        value={getSetting('ReactorsComponent', DefaultSettings.ReactorsComponent)}
+        onChange={() => toggleSetting('ReactorsComponent')}
       >
         {'Reactions Modal'}
       </SwitchItem>
       <SwitchItem
-        value={getSetting('AuditLog', DefaultSettings.AuditLog)}
-        onChange={() => toggleSetting('AuditLog')}
+        value={getSetting('UserHook', DefaultSettings.UserHook)}
+        onChange={() => toggleSetting('UserHook')}
       >
         {'Audit Log'}
       </SwitchItem>

@@ -55,7 +55,7 @@ export default class RoleColors extends Plugin {
       const color = args[0].author.colorString;
       if (!color) return res;
 
-      const BotTag = findInReactTree(res, m => m.type?.displayName === 'BotTag');
+      const BotTag = findInReactTree(res, m => m.type?.Types);
       if (BotTag) BotTag.props.color = color;
 
       return res;
@@ -75,7 +75,9 @@ export default class RoleColors extends Plugin {
     patch(getModule(m => m.default?.displayName === 'MessageTimestamp'), 'default', (args, res) => {
       if (!this.settings.get('Timestamp', DefaultSettings.Timestamp)) return res;
 
-      Style(res, 'var(--color)');
+      const { isEdited } = args[0];
+
+      Style(res, isEdited ? 'inherit' : 'var(--color)');
 
       return res;
     });
@@ -360,7 +362,7 @@ export default class RoleColors extends Plugin {
       if (!color) return res;
 
       if (this.settings.get('BotTag', DefaultSettings.BotTag)) {
-        const BotTag = findInReactTree(res, m => m.type?.displayName === 'BotTag');
+        const BotTag = findInReactTree(res, m => m.type?.Types);
         if (BotTag) BotTag.props.color = color;
       }
 
@@ -371,7 +373,7 @@ export default class RoleColors extends Plugin {
     });
 
     // Bot Tag
-    patch(getModule(m => m.default?.displayName === 'BotTag'), 'default', (args, res) => {
+    patch(getModule(m => m.BotTagTypes), 'default', (args, res) => {
       if (!this.settings.get('BotTag', DefaultSettings.BotTag)) return res;
 
       const { color } = args[0];
@@ -383,9 +385,9 @@ export default class RoleColors extends Plugin {
     });
 
     // Reactions
-    new Promise(async resolve => resolve((await react.getComponent('ReactorsComponent')).component.prototype)).then(Reactions => {
-      patch(Reactions, 'render', (args, res, _this) => {
-        if (!this.settings.get('ReactionsModal', DefaultSettings.ReactionsModal)) return res;
+    Promise.resolve(react.getComponent('ReactorsComponent')).then(({ component: ReactorsComponent }) => {
+      patch(ReactorsComponent.prototype, 'render', (args, res, _this) => {
+        if (!this.settings.get('ReactorsComponent', DefaultSettings.ReactorsComponent)) return res;
 
         const { guildId } = _this.props;
 
@@ -408,9 +410,9 @@ export default class RoleColors extends Plugin {
     });
 
     // Audit Log
-    new Promise(async resolve => resolve((await react.getComponent('UserHook')).component.prototype)).then(AuditLog => {
-      patch(AuditLog, 'render', (args, res, _this) => {
-        if (!this.settings.get('AuditLog', DefaultSettings.AuditLog)) return res;
+    Promise.resolve(react.getComponent('UserHook')).then(({ component: UserHook }) => {
+      patch(UserHook.prototype, 'render', (args, res, _this) => {
+        if (!this.settings.get('UserHook', DefaultSettings.UserHook)) return res;
 
         const { guildId } = findInTree(_this._reactInternals, m => m.guildId, { walkable: [ 'return', 'stateNode', 'props' ] });
         const userId = _this.props.user.id;

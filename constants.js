@@ -25,6 +25,6 @@ export const DefaultSettings = Object.freeze({
   UMBio: true,
   // Other
   BotTag: true,
-  ReactionsModal: true,
-  AuditLog: true
+  ReactorsComponent: true,
+  UserHook: true
 });
