@@ -393,7 +393,10 @@ export default class RoleColors extends Plugin {
 
         TempPatch(res.props, 'renderRow', RenderRow => {
           TempPatch(RenderRow, 'type', Type => {
-            const { id: userId } = findInReactTree(Type, m => m.type?.displayName === 'DiscordTag').props.user;
+            const DiscordTag = findInReactTree(Type, m => m.type?.displayName === 'DiscordTag');
+            if (!DiscordTag) return Type;
+
+            const { id: userId } = DiscordTag.props.user;
 
             const color = getColor(guildId, userId);
             if (!color) return Type;
