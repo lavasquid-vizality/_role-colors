@@ -385,7 +385,7 @@ export default class RoleColors extends Plugin {
     });
 
     // Reactions
-    Promise.resolve(react.getComponent('ReactorsComponent')).then(({ component: ReactorsComponent }) => {
+    react.getComponent('ReactorsComponent').then(({ component: ReactorsComponent }) => {
       patch(ReactorsComponent.prototype, 'render', (args, res, _this) => {
         if (!this.settings.get('ReactorsComponent', DefaultSettings.ReactorsComponent)) return res;
 
@@ -413,7 +413,7 @@ export default class RoleColors extends Plugin {
     });
 
     // Audit Log
-    Promise.resolve(react.getComponent('UserHook')).then(({ component: UserHook }) => {
+    react.getComponent('UserHook').then(({ component: UserHook }) => {
       patch(UserHook.prototype, 'render', (args, res, _this) => {
         if (!this.settings.get('UserHook', DefaultSettings.UserHook)) return res;
 
