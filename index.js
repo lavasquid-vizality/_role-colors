@@ -11,7 +11,7 @@ import DynamicAnimatedAvatar from './components/DynamicAnimatedAvatar';
 import getColor from './api/getColor';
 import Style from './modules/Style';
 import TempPatch from './modules/TempPatch';
-import patchModalLazy from './modules/patchModalLazy';
+import getModalLazy from './modules/getModalLazy';
 
 import { DefaultSettings } from './constants';
 
@@ -301,7 +301,7 @@ export default class RoleColors extends Plugin {
       return res;
     });
     // User Modal
-    patchModalLazy(getModule.bind(this, m => m.default?.displayName === 'UserProfileModal'), 'default', (args, res) => {
+    getModalLazy(getModule.bind(this, m => m.default?.displayName === 'UserProfileModal')).then(module => patch(module, 'default', (args, res) => {
       if (!this.settings.get('UMUsername', DefaultSettings.UMUsername) && !this.settings.get('UMStatus', DefaultSettings.UMStatus) && !this.settings.get('UMBio', DefaultSettings.UMBio)) return res;
 
       const { guildId, user: { id: userId } } = args[0];
@@ -345,7 +345,7 @@ export default class RoleColors extends Plugin {
       });
 
       return res;
-    });
+    }));
     // Discord Tag
     patch(getModule(m => m.default?.displayName === 'DiscordTag'), 'default', args => {
       args[0].guildId = args[0].guildId ?? getGuildId();
