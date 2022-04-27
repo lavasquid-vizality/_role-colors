@@ -181,19 +181,39 @@ export default class RoleColors extends Plugin {
 
       return res;
     });
-    // User Activity
-    patch(getModule(m => m.displayName === 'MemberListItem').prototype, 'renderActivity', (args, res, _this) => {
-      if (!this.settings.get('MLUserActivity', DefaultSettings.MLUserActivity)) return res;
+    // Member List Item
+    const MemberListItem = patch(getModule(m => m.AVATAR_DECORATION_PADDING).default, 'type', (args, res) => {
+      // User Activity
+      patch(res.type.prototype, 'renderActivity', (args, res, _this) => {
+        if (!this.settings.get('MLUserActivity', DefaultSettings.MLUserActivity)) return res;
 
-      const { guildId, user: { id: userId } } = _this.props;
+        const { guildId, user: { id: userId } } = _this.props;
 
-      const color = getColor(guildId, userId);
-      if (!color) return res;
+        const color = getColor(guildId, userId);
+        if (!color) return res;
 
-      res.props.color = color;
+        res.props.color = color;
 
-      return res;
+        return res;
+      });
+
+      // Bot Tag
+      patch(res.type.prototype, 'renderBot', (args, res, _this) => {
+        if (!res || !this.settings.get('BotTag', DefaultSettings.BotTag)) return res;
+
+        const { guildId, user: { id: userId } } = _this.props;
+
+        const color = getColor(guildId, userId);
+        if (!color) return res;
+
+        res.props.color = color;
+
+        return res;
+      });
+
+      MemberListItem();
     });
+    // User Activity
     patch(getModule(m => m.default?.displayName === 'ActivityStatus'), 'default', (args, res) => {
       if (!res || !this.settings.get('MLUserActivity', DefaultSettings.MLUserActivity)) return res;
 
@@ -201,19 +221,6 @@ export default class RoleColors extends Plugin {
       if (!color) return res;
 
       Style(res, color);
-
-      return res;
-    });
-    // Bot Tag
-    patch(getModule(m => m.displayName === 'MemberListItem').prototype, 'renderBot', (args, res, _this) => {
-      if (!res || !this.settings.get('BotTag', DefaultSettings.BotTag)) return res;
-
-      const { guildId, user: { id: userId } } = _this.props;
-
-      const color = getColor(guildId, userId);
-      if (!color) return res;
-
-      res.props.color = color;
 
       return res;
     });
