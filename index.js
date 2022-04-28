@@ -155,7 +155,7 @@ export default class RoleColors extends Plugin {
 
       const { typingUsers, guildId } = _this.props;
 
-      res.props.children?.[1].props.children.filter?.(child => child.props).forEach((child, index) => {
+      res.props.children?.[0].props.children[1].props.children.filter?.(child => child.props).forEach((child, index) => {
         const userId = Object.keys(typingUsers)[index];
 
         const color = getColor(guildId, userId);
