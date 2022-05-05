@@ -99,7 +99,7 @@ export default class RoleColors extends Plugin {
 
     // Mention
     // User Mention
-    patch(getModule(m => m.default?.displayName === 'UserMention'), 'default', (args, res) => {
+    patch(getModule(m => m.default?.toString().includes('e.inlinePreview') && m.default.displayName !== 'RoleMention'), 'default', (args, res) => {
       if (!this.settings.get('Mention', DefaultSettings.Mention) && !this.settings.get('UserMentionAvatar', DefaultSettings.UserMentionAvatar)) return res;
 
       const { channelId, userId } = args[0];
@@ -239,7 +239,7 @@ export default class RoleColors extends Plugin {
     });
 
     // User Info Area
-    patch(getModule(m => m.default?.displayName === 'Text'), 'default', args => {
+    patch(getModule(m => m.Text?.displayName === 'Text'), 'Text', args => {
       if (args[0].children?.type?.displayName !== 'PanelTitle' && args[0].children?.type?.displayName !== 'HoverRoll') return;
       if (!this.settings.get('UITitle', DefaultSettings.UITitle) && !this.settings.get('UIStatus', DefaultSettings.UIStatus)) return;
 
